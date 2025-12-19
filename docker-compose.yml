@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pfood-stock-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pfood_stock
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pfood-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pfood-stock-backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: pfood_stock
+      JWT_SECRET: your-super-secret-jwt-key-here
+      JWT_EXPIRES_IN: 24h
+      JWT_REFRESH_SECRET: your-super-secret-refresh-key-here
+      JWT_REFRESH_EXPIRES_IN: 7d
+      NODE_ENV: development
+      PORT: 3000
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      - pfood-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pfood-stock-frontend
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - pfood-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+
+networks:
+  pfood-network:
+    driver: bridge
