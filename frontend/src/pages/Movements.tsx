@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
-import { Plus, ArrowUp, ArrowDown, Filter, Calendar } from 'lucide-react';
+import { useEffect, useRef, useState, KeyboardEvent } from 'react';
+import { Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import api from '../services/api';
 import { Movement, Product, MovementType } from '../types';
-import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
 
 export default function Movements() {
+  const MIN_PRODUCT_SEARCH_CHARS = 4;
+  const PRODUCT_SEARCH_DEBOUNCE = 2000;
+  const PRODUCT_SEARCH_LIMIT = 15;
+
   const [movements, setMovements] = useState<Movement[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +17,6 @@ export default function Movements() {
   const [typeFilter, setTypeFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const { user } = useAuthStore();
 
   const [formData, setFormData] = useState({
     productId: '',
@@ -26,10 +28,42 @@ export default function Movements() {
     notes: '',
   });
 
+  const [productSearchTerm, setProductSearchTerm] = useState('');
+  const [productSearchResults, setProductSearchResults] = useState<Product[]>([]);
+  const [productSearchLoading, setProductSearchLoading] = useState(false);
+  const [highlightedProductIndex, setHighlightedProductIndex] = useState(-1);
+  const productSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const productSearchCache = useRef<Record<string, Product[]>>({});
+
   useEffect(() => {
     loadMovements();
     loadProducts();
   }, [productFilter, typeFilter, startDate, endDate]);
+
+  useEffect(() => {
+    if (productSearchTimeout.current) {
+      clearTimeout(productSearchTimeout.current);
+    }
+
+    const trimmedTerm = productSearchTerm.trim();
+
+    if (!trimmedTerm || trimmedTerm.length < MIN_PRODUCT_SEARCH_CHARS) {
+      setProductSearchResults([]);
+      setHighlightedProductIndex(-1);
+      setProductSearchLoading(false);
+      return;
+    }
+
+    productSearchTimeout.current = setTimeout(() => {
+      searchProducts(trimmedTerm);
+    }, PRODUCT_SEARCH_DEBOUNCE);
+
+    return () => {
+      if (productSearchTimeout.current) {
+        clearTimeout(productSearchTimeout.current);
+      }
+    };
+  }, [productSearchTerm]);
 
   const loadMovements = async () => {
     try {
@@ -38,7 +72,7 @@ export default function Movements() {
       if (typeFilter) params.append('type', typeFilter);
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
-      
+
       const response = await api.get(`/movements?${params}`);
       setMovements(response.data);
     } catch (error) {
@@ -57,8 +91,37 @@ export default function Movements() {
     }
   };
 
+  const searchProducts = async (term: string) => {
+    const normalizedTerm = term.toLowerCase();
+
+    if (productSearchCache.current[normalizedTerm]) {
+      setProductSearchResults(productSearchCache.current[normalizedTerm]);
+      return;
+    }
+
+    setProductSearchLoading(true);
+    try {
+      const params = new URLSearchParams({
+        search: term,
+        limit: PRODUCT_SEARCH_LIMIT.toString(),
+      });
+      const response = await api.get(`/products?${params}`);
+      const results = response.data.slice(0, PRODUCT_SEARCH_LIMIT);
+      setProductSearchResults(results);
+      productSearchCache.current[normalizedTerm] = results;
+    } catch (error) {
+      toast.error('Erro ao buscar produtos');
+    } finally {
+      setProductSearchLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.productId) {
+      toast.error('Selecione um produto');
+      return;
+    }
     try {
       const data = {
         ...formData,
@@ -68,7 +131,7 @@ export default function Movements() {
 
       await api.post('/movements', data);
       toast.success('Movimentação registrada!');
-      
+
       setShowModal(false);
       resetForm();
       loadMovements();
@@ -87,6 +150,63 @@ export default function Movements() {
       invoiceNumber: '',
       notes: '',
     });
+    setProductSearchTerm('');
+    setProductSearchResults([]);
+  };
+
+  const handleSelectProduct = (product: Product) => {
+    setFormData((prev) => ({ ...prev, productId: product.id.toString() }));
+    setProductSearchTerm(product.name);
+    setProductSearchResults([]);
+    setHighlightedProductIndex(-1);
+  };
+
+  const handleProductSearchChange = (value: string) => {
+    setProductSearchTerm(value);
+    setHighlightedProductIndex(-1);
+    setFormData((prev) => ({ ...prev, productId: '' }));
+  };
+
+  const handleProductSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (productSearchResults.length === 0) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setHighlightedProductIndex((prev) => {
+        const nextIndex = prev + 1;
+        return nextIndex >= productSearchResults.length ? 0 : nextIndex;
+      });
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setHighlightedProductIndex((prev) => {
+        const nextIndex = prev - 1;
+        return nextIndex < 0 ? productSearchResults.length - 1 : nextIndex;
+      });
+    } else if (event.key === 'Enter' && highlightedProductIndex >= 0) {
+      event.preventDefault();
+      const product = productSearchResults[highlightedProductIndex];
+      if (product) {
+        handleSelectProduct(product);
+      }
+    }
+  };
+
+  const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const renderHighlightedName = (name: string) => {
+    const term = productSearchTerm.trim();
+    if (!term) return name;
+
+    const regex = new RegExp(`(${escapeRegExp(term)})`, 'ig');
+    return name.split(regex).map((part, index) =>
+      part.toLowerCase() === term.toLowerCase() ? (
+        <span key={`${part}-${index}`} className="bg-yellow-200">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
   };
 
   const formatDate = (date: string) => {
@@ -99,6 +219,11 @@ export default function Movements() {
     setStartDate('');
     setEndDate('');
   };
+
+  const trimmedProductSearch = productSearchTerm.trim();
+  const hasProductSearchTerm = trimmedProductSearch.length > 0;
+  const shouldShowDropdown =
+    !formData.productId && (hasProductSearchTerm || productSearchLoading);
 
   if (loading) return <div>Carregando...</div>;
 
@@ -243,7 +368,7 @@ export default function Movements() {
             ))}
           </tbody>
         </table>
-        
+
         {movements.length === 0 && (
           <div className="text-center py-12 text-gray-500">
             Nenhuma movimentação encontrada
@@ -260,19 +385,76 @@ export default function Movements() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Produto *</label>
-                  <select
-                    value={formData.productId}
-                    onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 border rounded-lg"
-                  >
-                    <option value="">Selecione um produto...</option>
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name} (Estoque: {product.currentQuantity} {product.unit})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={productSearchTerm}
+                      onChange={(e) => handleProductSearchChange(e.target.value)}
+                      onKeyDown={handleProductSearchKeyDown}
+                      placeholder="Digite pelo menos 4 caracteres para buscar"
+                      className="w-full px-3 py-2 border rounded-lg"
+                      autoComplete="off"
+                    />
+                    {shouldShowDropdown && (
+                      <div className="absolute mt-1 inset-x-0 bg-white border rounded-lg shadow-lg max-h-64 overflow-y-auto z-10">
+                        {trimmedProductSearch.length > 0 &&
+                          trimmedProductSearch.length < MIN_PRODUCT_SEARCH_CHARS && (
+                            <div className="p-3 text-sm text-gray-500">
+                              Digite pelo menos {MIN_PRODUCT_SEARCH_CHARS} caracteres para buscar
+                            </div>
+                          )}
+
+                        {trimmedProductSearch.length >= MIN_PRODUCT_SEARCH_CHARS && (
+                          <>
+                            {productSearchLoading && (
+                              <div className="p-3 text-sm text-gray-500">Carregando...</div>
+                            )}
+                            {!productSearchLoading && productSearchResults.length === 0 && (
+                              <div className="p-3 text-sm text-gray-500">Nenhum produto encontrado</div>
+                            )}
+                            {!productSearchLoading && productSearchResults.length > 0 && (
+                              <ul className="divide-y divide-gray-100">
+                                {productSearchResults.map((product, index) => (
+                                  <li
+                                    key={product.id}
+                                    className={`p-3 cursor-pointer hover:bg-gray-50 ${
+                                      highlightedProductIndex === index ? 'bg-blue-50' : ''
+                                    }`}
+                                    onMouseDown={() => handleSelectProduct(product)}
+                                  >
+                                    <div className="font-medium flex items-center justify-between gap-2">
+                                      <span>{renderHighlightedName(product.name)}</span>
+                                      <span className="text-xs text-gray-500">
+                                        {product.currentQuantity} {product.unit}
+                                      </span>
+                                    </div>
+                                    {product.category?.name && (
+                                      <div className="text-xs text-gray-500">
+                                        Categoria: {product.category.name}
+                                      </div>
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                    {trimmedProductSearch.length > 0 &&
+                      trimmedProductSearch.length < MIN_PRODUCT_SEARCH_CHARS && (
+                        <p className="mt-1 text-xs text-gray-500">
+                          Digite pelo menos {MIN_PRODUCT_SEARCH_CHARS} caracteres para buscar.
+                        </p>
+                      )}
+                    {formData.productId && (
+                      <p className="mt-1 text-xs text-gray-600">
+                        Produto selecionado:{' '}
+                        {products.find((p) => p.id.toString() === formData.productId)?.name ||
+                          productSearchTerm}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Tipo *</label>

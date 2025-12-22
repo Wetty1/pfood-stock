@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, Search, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import api from '../services/api';
 import { Product, Category } from '../types';
 import { useAuthStore } from '../store/authStore';
@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [search, setSearch] = useState('');
@@ -32,17 +32,18 @@ export default function Products() {
   }, [search, categoryFilter]);
 
   const loadProducts = async () => {
+    setLoadingProducts(true);
     try {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (categoryFilter) params.append('categoryId', categoryFilter);
-      
+
       const response = await api.get(`/products?${params}`);
       setProducts(response.data);
     } catch (error) {
       toast.error('Erro ao carregar produtos');
     } finally {
-      setLoading(false);
+      setLoadingProducts(false);
     }
   };
 
@@ -73,7 +74,7 @@ export default function Products() {
         await api.post('/products', data);
         toast.success('Produto criado!');
       }
-      
+
       setShowModal(false);
       resetForm();
       loadProducts();
@@ -129,7 +130,7 @@ export default function Products() {
 
   const canEdit = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
-  if (loading) return <div>Carregando...</div>;
+  if (loadingProducts && products.length === 0) return <div>Carregando produtos...</div>;
 
   return (
     <div className="space-y-6">
@@ -180,6 +181,9 @@ export default function Products() {
 
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
+        {loadingProducts && products.length > 0 && (
+          <div className="px-6 py-3 text-sm text-gray-500">Carregando produtos...</div>
+        )}
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
