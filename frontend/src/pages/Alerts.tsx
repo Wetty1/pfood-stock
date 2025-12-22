@@ -60,12 +60,12 @@ export default function Alerts() {
   if (loading) return <div>Carregando...</div>;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Alertas de Estoque</h1>
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl lg:text-3xl font-bold">Alertas de Estoque</h1>
         <button
           onClick={goToProducts}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto justify-center"
         >
           <Package size={20} />
           Ver Produtos
@@ -73,41 +73,41 @@ export default function Alerts() {
       </div>
 
       {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+        <div className="bg-white rounded-lg shadow p-4 lg:p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total de Alertas</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.total}</p>
+              <p className="text-2xl lg:text-3xl font-bold text-gray-900 mt-2">{stats.total}</p>
             </div>
-            <div className="bg-orange-100 p-3 rounded-lg">
-              <AlertTriangle className="text-orange-600" size={24} />
+            <div className="bg-orange-100 p-2 lg:p-3 rounded-lg">
+              <AlertTriangle className="text-orange-600" size={20} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-4 lg:p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Alertas Críticos</p>
-              <p className="text-3xl font-bold text-red-600 mt-2">{stats.critical}</p>
+              <p className="text-2xl lg:text-3xl font-bold text-red-600 mt-2">{stats.critical}</p>
               <p className="text-xs text-gray-500 mt-1">Estoque zerado</p>
             </div>
-            <div className="bg-red-100 p-3 rounded-lg">
-              <AlertCircle className="text-red-600" size={24} />
+            <div className="bg-red-100 p-2 lg:p-3 rounded-lg">
+              <AlertCircle className="text-red-600" size={20} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-4 lg:p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Alertas de Atenção</p>
-              <p className="text-3xl font-bold text-yellow-600 mt-2">{stats.warning}</p>
+              <p className="text-2xl lg:text-3xl font-bold text-yellow-600 mt-2">{stats.warning}</p>
               <p className="text-xs text-gray-500 mt-1">Abaixo do mínimo</p>
             </div>
-            <div className="bg-yellow-100 p-3 rounded-lg">
-              <TrendingDown className="text-yellow-600" size={24} />
+            <div className="bg-yellow-100 p-2 lg:p-3 rounded-lg">
+              <TrendingDown className="text-yellow-600" size={20} />
             </div>
           </div>
         </div>
@@ -115,16 +115,16 @@ export default function Alerts() {
 
       {/* Lista de Alertas */}
       {alerts.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
+        <div className="bg-white rounded-lg shadow p-8 lg:p-12 text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-green-100 p-4 rounded-full">
-              <Package className="text-green-600" size={48} />
+            <div className="bg-green-100 p-3 lg:p-4 rounded-full">
+              <Package className="text-green-600" size={32} />
             </div>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
+          <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-2">
             Nenhum alerta ativo!
           </h3>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm lg:text-base">
             Todos os produtos estão com estoque adequado.
           </p>
         </div>
@@ -133,8 +133,8 @@ export default function Alerts() {
           {/* Alertas Críticos */}
           {stats.critical > 0 && (
             <div>
-              <h2 className="text-xl font-bold text-red-600 mb-3 flex items-center gap-2">
-                <AlertCircle size={24} />
+              <h2 className="text-lg lg:text-xl font-bold text-red-600 mb-3 flex items-center gap-2">
+                <AlertCircle size={20} />
                 Alertas Críticos ({stats.critical})
               </h2>
               <div className="space-y-3">
@@ -142,34 +142,33 @@ export default function Alerts() {
                   .filter((alert) => alert.level === 'CRITICAL')
                   .map((alert) => {
                     const Icon = getAlertIcon(alert.level);
-                    const color = getAlertColor(alert.level);
                     
                     return (
                       <div
                         key={alert.id}
-                        className={`bg-white rounded-lg shadow-md border-l-4 border-${color}-500 p-4 hover:shadow-lg transition-shadow`}
+                        className="bg-white rounded-lg shadow-md border-l-4 border-red-500 p-4 hover:shadow-lg transition-shadow"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-4 flex-1">
-                            <div className={`bg-${color}-100 p-3 rounded-lg`}>
-                              <Icon className={`text-${color}-600`} size={24} />
+                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                          <div className="flex items-start gap-3 lg:gap-4 flex-1">
+                            <div className="bg-red-100 p-2 lg:p-3 rounded-lg">
+                              <Icon className="text-red-600" size={20} />
                             </div>
                             <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-lg font-bold text-gray-900">
+                              <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-1">
+                                <h3 className="text-base lg:text-lg font-bold text-gray-900">
                                   {alert.productName}
                                 </h3>
-                                <span className={`px-2 py-1 text-xs font-semibold bg-${color}-100 text-${color}-800 rounded-full`}>
-                                  {alert.level === 'CRITICAL' ? 'CRÍTICO' : 'ATENÇÃO'}
+                                <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full w-fit">
+                                  CRÍTICO
                                 </span>
                               </div>
                               <p className="text-sm text-gray-600 mb-2">
                                 Categoria: {alert.categoryName}
                               </p>
-                              <div className="flex items-center gap-6 text-sm">
+                              <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                   <span className="text-gray-600">Estoque Atual: </span>
-                                  <span className={`font-bold text-${color}-600`}>
+                                  <span className="font-bold text-red-600">
                                     {alert.currentQuantity} {alert.unit}
                                   </span>
                                 </div>
@@ -182,8 +181,8 @@ export default function Alerts() {
                               </div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className={`text-2xl font-bold text-${color}-600`}>
+                          <div className="text-center lg:text-right">
+                            <div className="text-xl lg:text-2xl font-bold text-red-600">
                               {alert.currentQuantity === 0 ? '0%' : getPercentage(alert.currentQuantity, alert.minQuantity) + '%'}
                             </div>
                             <div className="text-xs text-gray-500">do mínimo</div>
@@ -199,8 +198,8 @@ export default function Alerts() {
           {/* Alertas de Atenção */}
           {stats.warning > 0 && (
             <div>
-              <h2 className="text-xl font-bold text-yellow-600 mb-3 flex items-center gap-2">
-                <AlertTriangle size={24} />
+              <h2 className="text-lg lg:text-xl font-bold text-yellow-600 mb-3 flex items-center gap-2">
+                <AlertTriangle size={20} />
                 Alertas de Atenção ({stats.warning})
               </h2>
               <div className="space-y-3">
@@ -208,34 +207,33 @@ export default function Alerts() {
                   .filter((alert) => alert.level === 'WARNING')
                   .map((alert) => {
                     const Icon = getAlertIcon(alert.level);
-                    const color = getAlertColor(alert.level);
                     
                     return (
                       <div
                         key={alert.id}
-                        className={`bg-white rounded-lg shadow-md border-l-4 border-${color}-500 p-4 hover:shadow-lg transition-shadow`}
+                        className="bg-white rounded-lg shadow-md border-l-4 border-yellow-500 p-4 hover:shadow-lg transition-shadow"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-4 flex-1">
-                            <div className={`bg-${color}-100 p-3 rounded-lg`}>
-                              <Icon className={`text-${color}-600`} size={24} />
+                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                          <div className="flex items-start gap-3 lg:gap-4 flex-1">
+                            <div className="bg-yellow-100 p-2 lg:p-3 rounded-lg">
+                              <Icon className="text-yellow-600" size={20} />
                             </div>
                             <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-lg font-bold text-gray-900">
+                              <div className="flex flex-col lg:flex-row lg:items-center gap-2 mb-1">
+                                <h3 className="text-base lg:text-lg font-bold text-gray-900">
                                   {alert.productName}
                                 </h3>
-                                <span className={`px-2 py-1 text-xs font-semibold bg-${color}-100 text-${color}-800 rounded-full`}>
+                                <span className="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full w-fit">
                                   ATENÇÃO
                                 </span>
                               </div>
                               <p className="text-sm text-gray-600 mb-2">
                                 Categoria: {alert.categoryName}
                               </p>
-                              <div className="flex items-center gap-6 text-sm">
+                              <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                   <span className="text-gray-600">Estoque Atual: </span>
-                                  <span className={`font-bold text-${color}-600`}>
+                                  <span className="font-bold text-yellow-600">
                                     {alert.currentQuantity} {alert.unit}
                                   </span>
                                 </div>
@@ -248,8 +246,8 @@ export default function Alerts() {
                               </div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className={`text-2xl font-bold text-${color}-600`}>
+                          <div className="text-center lg:text-right">
+                            <div className="text-xl lg:text-2xl font-bold text-yellow-600">
                               {getPercentage(alert.currentQuantity, alert.minQuantity)}%
                             </div>
                             <div className="text-xs text-gray-500">do mínimo</div>

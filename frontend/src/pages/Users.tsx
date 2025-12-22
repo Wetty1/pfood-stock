@@ -1,7 +1,7 @@
 export default function Users() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Usuários</h1>
+    <div className="space-y-4 lg:space-y-6">
+      <h1 className="text-2xl lg:text-3xl font-bold">Usuários</h1>
       <div className="bg-white rounded-lg shadow p-6">
         <p className="text-gray-600">Página de gerenciamento de usuários em desenvolvimento...</p>
       </div>

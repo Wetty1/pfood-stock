@@ -133,13 +133,13 @@ export default function Products() {
   if (loadingProducts && products.length === 0) return <div>Carregando produtos...</div>;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Produtos</h1>
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl lg:text-3xl font-bold">Produtos</h1>
         {canEdit && (
           <button
             onClick={() => openModal()}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto justify-center"
           >
             <Plus size={20} />
             Novo Produto
@@ -149,7 +149,7 @@ export default function Products() {
 
       {/* Filtros */}
       <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex gap-4">
+        <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -162,7 +162,7 @@ export default function Products() {
               />
             </div>
           </div>
-          <div className="w-64">
+          <div className="w-full lg:w-64">
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
@@ -179,8 +179,8 @@ export default function Products() {
         </div>
       </div>
 
-      {/* Tabela */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Tabela - Desktop */}
+      <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
         {loadingProducts && products.length > 0 && (
           <div className="px-6 py-3 text-sm text-gray-500">Carregando produtos...</div>
         )}
@@ -252,15 +252,86 @@ export default function Products() {
         </table>
       </div>
 
+      {/* Cards - Mobile */}
+      <div className="lg:hidden space-y-4">
+        {loadingProducts && products.length > 0 && (
+          <div className="text-center py-4 text-sm text-gray-500">Carregando produtos...</div>
+        )}
+        {products.map((product) => (
+          <div key={product.id} className="bg-white rounded-lg shadow p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex-1">
+                <h3 className="font-medium text-gray-900">{product.name}</h3>
+                {product.sku && <p className="text-sm text-gray-500">SKU: {product.sku}</p>}
+                <p className="text-sm text-gray-600">{product.category?.name}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {product.currentQuantity === 0 ? (
+                  <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+                    Sem estoque
+                  </span>
+                ) : product.currentQuantity <= product.minQuantity ? (
+                  <span className="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full">
+                    Estoque baixo
+                  </span>
+                ) : (
+                  <span className="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                    Normal
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 mb-3">
+              <div>
+                <p className="text-xs text-gray-500">Estoque Atual</p>
+                <p className={`font-medium ${product.currentQuantity <= product.minQuantity ? 'text-red-600' : 'text-gray-900'}`}>
+                  {product.currentQuantity} {product.unit}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Estoque Mínimo</p>
+                <p className="font-medium text-gray-900">{product.minQuantity} {product.unit}</p>
+              </div>
+              {product.unitPrice && (
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-500">Preço Unitário</p>
+                  <p className="font-medium text-gray-900">R$ {Number(product.unitPrice).toFixed(2)}</p>
+                </div>
+              )}
+            </div>
+            
+            {canEdit && (
+              <div className="flex gap-2 pt-3 border-t">
+                <button
+                  onClick={() => openModal(product)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700"
+                >
+                  <Edit size={16} />
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleDelete(product.id)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white py-2 px-3 rounded-lg hover:bg-red-700"
+                >
+                  <Trash2 size={16} />
+                  Excluir
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4">
+          <div className="bg-white rounded-lg p-4 lg:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl lg:text-2xl font-bold mb-4">
               {editingProduct ? 'Editar Produto' : 'Novo Produto'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Nome *</label>
                   <input
@@ -289,7 +360,7 @@ export default function Products() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Unidade *</label>
                   <input
@@ -325,7 +396,7 @@ export default function Products() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Preço Unitário</label>
                   <input
@@ -356,7 +427,7 @@ export default function Products() {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col lg:flex-row gap-3 pt-4">
                 <button
                   type="submit"
                   className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"

@@ -228,12 +228,12 @@ export default function Movements() {
   if (loading) return <div>Carregando...</div>;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Movimentações</h1>
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl lg:text-3xl font-bold">Movimentações</h1>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto justify-center"
         >
           <Plus size={20} />
           Nova Movimentação
@@ -242,7 +242,7 @@ export default function Movements() {
 
       {/* Filtros */}
       <div className="bg-white rounded-lg shadow p-4">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Produto</label>
             <select
@@ -299,8 +299,8 @@ export default function Movements() {
         </div>
       </div>
 
-      {/* Tabela */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Tabela - Desktop */}
+      <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -376,13 +376,97 @@ export default function Movements() {
         )}
       </div>
 
+      {/* Cards - Mobile */}
+      <div className="lg:hidden space-y-4">
+        {movements.map((movement) => (
+          <div key={movement.id} className="bg-white rounded-lg shadow p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex items-center gap-2">
+                {movement.type === 'ENTRY' ? (
+                  <>
+                    <ArrowUp className="text-green-600" size={20} />
+                    <span className="text-green-600 font-medium">Entrada</span>
+                  </>
+                ) : (
+                  <>
+                    <ArrowDown className="text-red-600" size={20} />
+                    <span className="text-red-600 font-medium">Saída</span>
+                  </>
+                )}
+              </div>
+              <span className="text-xs text-gray-500">
+                {formatDate(movement.createdAt)}
+              </span>
+            </div>
+            
+            <div className="mb-3">
+              <h3 className="font-medium text-gray-900">{movement.product?.name}</h3>
+              <p className="text-sm text-gray-600">{movement.product?.category?.name}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 mb-3">
+              <div>
+                <p className="text-xs text-gray-500">Quantidade</p>
+                <p className="font-medium text-gray-900">
+                  {movement.quantity} {movement.product?.unit}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Usuário</p>
+                <p className="font-medium text-gray-900">{movement.user?.name}</p>
+              </div>
+            </div>
+            
+            {(movement.supplier || movement.reason || movement.invoiceNumber || movement.notes) && (
+              <div className="pt-3 border-t">
+                {movement.type === 'ENTRY' ? (
+                  <>
+                    {movement.supplier && (
+                      <div className="mb-1">
+                        <span className="text-xs text-gray-500">Fornecedor: </span>
+                        <span className="text-sm font-medium">{movement.supplier}</span>
+                      </div>
+                    )}
+                    {movement.invoiceNumber && (
+                      <div className="mb-1">
+                        <span className="text-xs text-gray-500">NF: </span>
+                        <span className="text-sm">{movement.invoiceNumber}</span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  movement.reason && (
+                    <div className="mb-1">
+                      <span className="text-xs text-gray-500">Motivo: </span>
+                      <span className="text-sm font-medium">{movement.reason}</span>
+                    </div>
+                  )
+                )}
+                {movement.notes && (
+                  <div>
+                    <span className="text-xs text-gray-500">Observações: </span>
+                    <span className="text-sm">{movement.notes}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+        
+        {movements.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            Nenhuma movimentação encontrada
+          </div>
+        )}
+      </div>
+
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-            <h2 className="text-2xl font-bold mb-4">Nova Movimentação</h2>
+          <div className="bg-white rounded-lg p-4 lg:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl lg:text-2xl font-bold mb-4">Nova Movimentação</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Produto *</label>
                   <div className="relative">
@@ -483,7 +567,7 @@ export default function Movements() {
               </div>
 
               {formData.type === MovementType.ENTRY ? (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Fornecedor</label>
                     <input
@@ -526,7 +610,7 @@ export default function Movements() {
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col lg:flex-row gap-3 pt-4">
                 <button
                   type="submit"
                   className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
