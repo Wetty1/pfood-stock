@@ -4,6 +4,7 @@ import api from '../services/api';
 import { Product, Category } from '../types';
 import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
+import { formatCurrency, formatQuantity } from '../utils/format';
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -23,6 +24,8 @@ export default function Products() {
     minQuantity: '',
     unitPrice: '',
     sku: '',
+    baseProduct: '',
+    brand: '',
     expirationDate: '',
   });
 
@@ -106,6 +109,8 @@ export default function Products() {
         minQuantity: product.minQuantity.toString(),
         unitPrice: product.unitPrice?.toString() || '',
         sku: product.sku || '',
+        baseProduct: product.baseProduct || '',
+        brand: product.brand || '',
         expirationDate: product.expirationDate || '',
       });
     } else {
@@ -124,6 +129,8 @@ export default function Products() {
       minQuantity: '',
       unitPrice: '',
       sku: '',
+      baseProduct: '',
+      brand: '',
       expirationDate: '',
     });
   };
@@ -201,28 +208,36 @@ export default function Products() {
               <tr key={product.id}>
                 <td className="px-6 py-4">
                   <div>
-                    <div className="font-medium">{product.name}</div>
+                    <div className="font-medium">
+                      {product.name}
+                      {product.brand && (
+                        <span className="text-sm text-gray-600 ml-1">({product.brand})</span>
+                      )}
+                    </div>
                     {product.sku && <div className="text-sm text-gray-500">SKU: {product.sku}</div>}
+                    {product.baseProduct && (
+                      <div className="text-xs text-blue-600">Base: {product.baseProduct}</div>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4">{product.category?.name}</td>
                 <td className="px-6 py-4">
-                  <span className={`font-medium ${product.currentQuantity <= product.minQuantity ? 'text-red-600' : 'text-gray-900'}`}>
-                    {product.currentQuantity} {product.unit}
+                  <span className={`font-medium ${Number(product.currentQuantity) < Number(product.minQuantity) ? 'text-red-600' : Number(product.currentQuantity) < 2 * Number(product.minQuantity) && Number(product.currentQuantity) > Number(product.minQuantity) ? 'text-yellow-600' : 'text-gray-900'}`}>
+                    {formatQuantity(product.currentQuantity, product.unit)}
                   </span>
                 </td>
-                <td className="px-6 py-4">{product.minQuantity} {product.unit}</td>
+                <td className="px-6 py-4">{formatQuantity(product.minQuantity, product.unit)}</td>
                 <td className="px-6 py-4">
-                  {product.unitPrice ? `R$ ${Number(product.unitPrice).toFixed(2)}` : '-'}
+                  {product.unitPrice ? formatCurrency(product.unitPrice) : '-'}
                 </td>
                 <td className="px-6 py-4">
-                  {product.currentQuantity === 0 ? (
+                  {Number(product.currentQuantity) < Number(product.minQuantity) ? (
                     <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-                      Sem estoque
+                      Crítico
                     </span>
-                  ) : product.currentQuantity <= product.minQuantity ? (
+                  ) : Number(product.currentQuantity) < 2 * Number(product.minQuantity) && Number(product.currentQuantity) > Number(product.minQuantity) ? (
                     <span className="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full">
-                      Estoque baixo
+                      Atenção
                     </span>
                   ) : (
                     <span className="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
@@ -261,18 +276,26 @@ export default function Products() {
           <div key={product.id} className="bg-white rounded-lg shadow p-4">
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
-                <h3 className="font-medium text-gray-900">{product.name}</h3>
+                <h3 className="font-medium text-gray-900">
+                  {product.name}
+                  {product.brand && (
+                    <span className="text-sm text-gray-600 ml-1">({product.brand})</span>
+                  )}
+                </h3>
                 {product.sku && <p className="text-sm text-gray-500">SKU: {product.sku}</p>}
+                {product.baseProduct && (
+                  <p className="text-xs text-blue-600">Base: {product.baseProduct}</p>
+                )}
                 <p className="text-sm text-gray-600">{product.category?.name}</p>
               </div>
               <div className="flex items-center gap-2">
-                {product.currentQuantity === 0 ? (
+                {product.currentQuantity < product.minQuantity ? (
                   <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-                    Sem estoque
+                    Crítico
                   </span>
-                ) : product.currentQuantity <= product.minQuantity ? (
+                ) : product.currentQuantity < 2 * product.minQuantity ? (
                   <span className="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full">
-                    Estoque baixo
+                    Atenção
                   </span>
                 ) : (
                   <span className="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
@@ -281,26 +304,26 @@ export default function Products() {
                 )}
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 mb-3">
               <div>
                 <p className="text-xs text-gray-500">Estoque Atual</p>
                 <p className={`font-medium ${product.currentQuantity <= product.minQuantity ? 'text-red-600' : 'text-gray-900'}`}>
-                  {product.currentQuantity} {product.unit}
+                  {formatQuantity(product.currentQuantity, product.unit)}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Estoque Mínimo</p>
-                <p className="font-medium text-gray-900">{product.minQuantity} {product.unit}</p>
+                <p className="font-medium text-gray-900">{formatQuantity(product.minQuantity, product.unit)}</p>
               </div>
               {product.unitPrice && (
                 <div className="col-span-2">
                   <p className="text-xs text-gray-500">Preço Unitário</p>
-                  <p className="font-medium text-gray-900">R$ {Number(product.unitPrice).toFixed(2)}</p>
+                  <p className="font-medium text-gray-900">{formatCurrency(product.unitPrice)}</p>
                 </div>
               )}
             </div>
-            
+
             {canEdit && (
               <div className="flex gap-2 pt-3 border-t">
                 <button
@@ -380,8 +403,12 @@ export default function Products() {
                     value={formData.currentQuantity}
                     onChange={(e) => setFormData({ ...formData, currentQuantity: e.target.value })}
                     required
-                    className="w-full px-3 py-2 border rounded-lg"
+                    disabled={!!editingProduct}
+                    className="w-full px-3 py-2 border rounded-lg disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
+                  {editingProduct && (
+                    <p className="text-xs text-gray-500 mt-1">Altere via movimentações de estoque</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Quantidade Mínima *</label>
@@ -422,6 +449,32 @@ export default function Products() {
                     type="date"
                     value={formData.expirationDate}
                     onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Produto Base</label>
+                  <input
+                    type="text"
+                    value={formData.baseProduct}
+                    onChange={(e) => setFormData({ ...formData, baseProduct: e.target.value })}
+                    placeholder="Ex: arroz, feijao, oleo..."
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Usado para agrupar produtos similares nos alertas
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Marca</label>
+                  <input
+                    type="text"
+                    value={formData.brand}
+                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                    placeholder="Ex: Tio João, Camil, Sadia..."
                     className="w-full px-3 py-2 border rounded-lg"
                   />
                 </div>

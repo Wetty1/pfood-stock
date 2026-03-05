@@ -79,7 +79,11 @@ async function seed() {
       categories.push(category);
       console.log(`✅ Categoria criada: ${category.name}`);
     } catch (error) {
-      console.log(`⚠️  Categoria ${categoryData.name} já existe`);
+      const existing = await categoriesService.findByName(categoryData.name);
+      if (existing) {
+        categories.push(existing);
+        console.log(`⚠️  Categoria ${categoryData.name} já existe, usando existente`);
+      }
     }
   }
 
@@ -96,6 +100,8 @@ async function seed() {
         minQuantity: 5.0,
         unitPrice: 18.90,
         sku: 'FRG001',
+        baseProduct: 'frango',
+        brand: 'Sadia',
       },
       {
         name: 'Picanha',
@@ -105,6 +111,8 @@ async function seed() {
         minQuantity: 3.0,
         unitPrice: 65.00,
         sku: 'CAR001',
+        baseProduct: 'picanha',
+        brand: 'Friboi',
       },
       {
         name: 'Alface',
@@ -170,13 +178,26 @@ async function seed() {
         sku: 'MAS001',
       },
       {
-        name: 'Arroz Branco',
+        name: 'Arroz Branco Marca A',
         categoryId: categories[6].id,
         unit: 'kg',
-        currentQuantity: 50.0,
+        currentQuantity: 9.0,
         minQuantity: 20.0,
         unitPrice: 5.50,
         sku: 'GRA001',
+        baseProduct: 'arroz',
+        brand: 'Tio João',
+      },
+      {
+        name: 'Arroz Branco Marca B',
+        categoryId: categories[6].id,
+        unit: 'kg',
+        currentQuantity: 9.0,
+        minQuantity: 20.0,
+        unitPrice: 5.20,
+        sku: 'GRA001B',
+        baseProduct: 'arroz',
+        brand: 'Camil',
       },
       {
         name: 'Feijão Preto',
@@ -186,6 +207,8 @@ async function seed() {
         minQuantity: 10.0,
         unitPrice: 7.80,
         sku: 'GRA002',
+        baseProduct: 'feijao',
+        brand: 'Kicaldo',
       },
     ];
 

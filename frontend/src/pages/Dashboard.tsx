@@ -3,6 +3,7 @@ import { Package, AlertTriangle, TrendingUp, DollarSign } from 'lucide-react';
 import api from '../services/api';
 import { DashboardStats } from '../types';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { formatCurrency, formatNumber } from '../utils/format';
 
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -83,7 +84,7 @@ export default function Dashboard() {
             <div className="mb-2 lg:mb-0">
               <p className="text-xs lg:text-sm text-gray-600">Valor do Estoque</p>
               <p className="text-xl lg:text-3xl font-bold text-green-600 mt-1 lg:mt-2">
-                R$ {stats?.totalStockValue.toFixed(2)}
+                {formatCurrency(stats?.totalStockValue)}
               </p>
             </div>
             <div className="bg-green-100 p-2 lg:p-3 rounded-lg">
@@ -143,13 +144,13 @@ export default function Dashboard() {
           <div className="text-center p-3 lg:p-4 bg-blue-50 rounded-lg">
             <p className="text-xs lg:text-sm text-gray-600">Quantidade Entrada</p>
             <p className="text-xl lg:text-2xl font-bold text-blue-600 mt-1">
-              {stats?.last30Days.totalEntriesQuantity.toFixed(2)}
+              {formatNumber(stats?.last30Days.totalEntriesQuantity)}
             </p>
           </div>
           <div className="text-center p-3 lg:p-4 bg-purple-50 rounded-lg">
             <p className="text-xs lg:text-sm text-gray-600">Quantidade Saída</p>
             <p className="text-xl lg:text-2xl font-bold text-purple-600 mt-1">
-              {stats?.last30Days.totalExitsQuantity.toFixed(2)}
+              {formatNumber(stats?.last30Days.totalExitsQuantity)}
             </p>
           </div>
         </div>

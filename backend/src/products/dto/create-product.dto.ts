@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, IsNumber, IsOptional, IsDateString, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Filé de Frango' })
@@ -42,8 +42,19 @@ export class CreateProductDto {
   @IsString()
   sku?: string;
 
+  @ApiProperty({ example: 'frango', required: false })
+  @IsOptional()
+  @IsString()
+  baseProduct?: string;
+
+  @ApiProperty({ example: 'Sadia', required: false })
+  @IsOptional()
+  @IsString()
+  brand?: string;
+
   @ApiProperty({ example: '2024-12-31', required: false })
   @IsOptional()
   @IsDateString()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   expirationDate?: string;
 }

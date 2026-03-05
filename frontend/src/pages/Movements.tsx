@@ -3,6 +3,7 @@ import { Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import api from '../services/api';
 import { Movement, Product, MovementType } from '../types';
 import toast from 'react-hot-toast';
+import { formatQuantity } from '../utils/format';
 
 export default function Movements() {
   const MIN_PRODUCT_SEARCH_CHARS = 4;
@@ -338,7 +339,7 @@ export default function Movements() {
                 </td>
                 <td className="px-6 py-4">
                   <span className="font-medium">
-                    {movement.quantity} {movement.product?.unit}
+                    {formatQuantity(movement.quantity, movement.product?.unit)}
                   </span>
                 </td>
                 <td className="px-6 py-4">
@@ -408,7 +409,7 @@ export default function Movements() {
               <div>
                 <p className="text-xs text-gray-500">Quantidade</p>
                 <p className="font-medium text-gray-900">
-                  {movement.quantity} {movement.product?.unit}
+                  {formatQuantity(movement.quantity, movement.product?.unit)}
                 </p>
               </div>
               <div>
@@ -509,7 +510,7 @@ export default function Movements() {
                                     <div className="font-medium flex items-center justify-between gap-2">
                                       <span>{renderHighlightedName(product.name)}</span>
                                       <span className="text-xs text-gray-500">
-                                        {product.currentQuantity} {product.unit}
+                                        {formatQuantity(product.currentQuantity, product.unit)}
                                       </span>
                                     </div>
                                     {product.category?.name && (
