@@ -20,6 +20,7 @@ export const databaseConfig: TypeOrmModuleAsyncOptions = {
     synchronize: false,
     migrationsRun: configService.get('NODE_ENV') === 'production',
     logging: configService.get('LOGGING') === 'true',
+    ssl: configService.get('SSL_MODE') === 'true' ? true : false,
   }),
 };
 
