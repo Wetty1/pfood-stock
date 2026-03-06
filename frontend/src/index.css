@@ -32,4 +32,20 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Melhorias para mobile */
+  input, select, textarea {
+    font-size: 16px; /* Previne zoom no iOS */
+  }
+  
+  /* Melhora o scroll em mobile */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Ajusta o viewport height para mobile */
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height */
+  }
 }

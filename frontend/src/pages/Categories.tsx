@@ -71,19 +71,20 @@ export default function Categories() {
   if (loading) return <div>Carregando...</div>;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Categorias</h1>
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl lg:text-3xl font-bold">Categorias</h1>
         <button
           onClick={() => openModal()}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto justify-center"
         >
           <Plus size={20} />
           Nova Categoria
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Tabela - Desktop */}
+      <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -115,6 +116,39 @@ export default function Categories() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Cards - Mobile */}
+      <div className="lg:hidden space-y-4">
+        {categories.map((category) => (
+          <div key={category.id} className="bg-white rounded-lg shadow p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex-1">
+                <h3 className="font-medium text-gray-900">{category.name}</h3>
+                {category.description && (
+                  <p className="text-sm text-gray-600 mt-1">{category.description}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex gap-2 pt-3 border-t">
+              <button
+                onClick={() => openModal(category)}
+                className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700"
+              >
+                <Edit size={16} />
+                Editar
+              </button>
+              <button
+                onClick={() => handleDelete(category.id)}
+                className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white py-2 px-3 rounded-lg hover:bg-red-700"
+              >
+                <Trash2 size={16} />
+                Excluir
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {showModal && (

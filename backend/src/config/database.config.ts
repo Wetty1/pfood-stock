@@ -19,7 +19,8 @@ export const databaseConfig: TypeOrmModuleAsyncOptions = {
     migrations: ['dist/migrations/*.js'],
     synchronize: false,
     migrationsRun: configService.get('NODE_ENV') === 'production',
-    logging: configService.get('NODE_ENV') === 'development',
+    logging: configService.get('LOGGING') === 'true',
+    ssl: configService.get('SSL_MODE') === 'true' ? true : false,
   }),
 };
 

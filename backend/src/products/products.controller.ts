@@ -27,12 +27,16 @@ export class ProductsController {
   @ApiResponse({ status: 200, description: 'Lista de produtos' })
   @ApiQuery({ name: 'categoryId', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   @Get()
   findAll(
     @Query('categoryId') categoryId?: number,
     @Query('search') search?: string,
+    @Query('limit') limit?: number,
   ) {
-    return this.productsService.findAll(categoryId, search);
+    const parsedLimit = limit ? Number(limit) : undefined;
+    const safeLimit = parsedLimit && !Number.isNaN(parsedLimit) ? parsedLimit : undefined;
+    return this.productsService.findAll(categoryId, search, safeLimit);
   }
 
   @ApiOperation({ summary: 'Listar produtos com estoque baixo' })

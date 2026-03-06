@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -17,22 +17,27 @@ export class ProductsService {
     return this.productsRepository.save(product);
   }
 
-  async findAll(categoryId?: number, search?: string): Promise<Product[]> {
-    const where: any = {};
-    
+  async findAll(categoryId?: number, search?: string, limit?: number): Promise<Product[]> {
+    const query = this.productsRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category')
+      .orderBy('product.name', 'ASC');
+
+    const normalizedSearch = search?.trim();
+
     if (categoryId) {
-      where.categoryId = categoryId;
+      query.andWhere('product.categoryId = :categoryId', { categoryId });
     }
     
-    if (search) {
-      where.name = Like(`%${search}%`);
+    if (normalizedSearch) {
+      query.andWhere('LOWER(product.name) LIKE :search', { search: `%${normalizedSearch.toLowerCase()}%` });
     }
 
-    return this.productsRepository.find({
-      where,
-      relations: ['category'],
-      order: { name: 'ASC' },
-    });
+    if (limit && limit > 0) {
+      query.take(limit);
+    }
+
+    return query.getMany();
   }
 
   async findOne(id: number): Promise<Product> {

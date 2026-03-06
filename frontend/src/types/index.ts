@@ -32,6 +32,8 @@ export interface Product {
   minQuantity: number;
   unitPrice?: number;
   sku?: string;
+  baseProduct?: string;
+  brand?: string;
   expirationDate?: string;
   createdAt: string;
   updatedAt: string;
@@ -66,6 +68,14 @@ export interface Alert {
   minQuantity: number;
   unit: string;
   level: 'CRITICAL' | 'WARNING';
+  productsCount?: number;
+  products?: Array<{
+    id: number;
+    name: string;
+    brand?: string;
+    currentQuantity: number;
+    sku?: string;
+  }>;
 }
 
 export interface DashboardStats {

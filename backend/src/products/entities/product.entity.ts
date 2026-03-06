@@ -32,6 +32,12 @@ export class Product {
   @Column({ nullable: true })
   sku: string;
 
+  @Column({ nullable: true })
+  baseProduct: string;
+
+  @Column({ nullable: true })
+  brand: string;
+
   @Column({ type: 'date', nullable: true })
   expirationDate: Date;
 
