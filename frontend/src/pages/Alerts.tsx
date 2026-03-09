@@ -18,7 +18,7 @@ export default function Alerts() {
 
   const loadAlerts = async () => {
     try {
-      const [alertsRes, countRes, criticalRes] = await Promise.all([
+      const [alertsRes] = await Promise.all([
         api.get('/alerts'),
         api.get('/alerts/count'),
         api.get('/alerts/critical/count'),
@@ -40,10 +40,6 @@ export default function Alerts() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getAlertColor = (level: string) => {
-    return level === 'CRITICAL' ? 'red' : 'yellow';
   };
 
   const getAlertIcon = (level: string) => {

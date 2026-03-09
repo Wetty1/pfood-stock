@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Package, AlertTriangle, TrendingUp, DollarSign } from 'lucide-react';
+import { Package, AlertTriangle, DollarSign } from 'lucide-react';
 import api from '../services/api';
 import { DashboardStats } from '../types';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
